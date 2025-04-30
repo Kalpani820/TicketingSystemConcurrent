@@ -3,6 +3,8 @@ package com.ticketing.concurrent;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import com.formdev.flatlaf.FlatLightLaf;
@@ -14,6 +16,7 @@ public class TicketingGUI {
     private JTextField capacityField;
     private TicketPool pool;
     private final List<Worker> workers = new ArrayList<>();
+    private JButton addProducer, addConsumer, addReader, addWriter;
 
     public static void main(String[] args) {
         try {
@@ -45,10 +48,16 @@ public class TicketingGUI {
         controlPanel.add(initBtn);
 
         JPanel buttonPanel = new JPanel(new GridLayout(2, 3, 10, 10));
-        JButton addProducer = new JButton("Add Producer");
-        JButton addConsumer = new JButton("Add Consumer");
-        JButton addReader = new JButton("Add Reader");
-        JButton addWriter = new JButton("Add Writer");
+        addProducer = new JButton("Add Producer");
+        addConsumer = new JButton("Add Consumer");
+        addReader = new JButton("Add Reader");
+        addWriter = new JButton("Add Writer");
+
+        addProducer.setEnabled(false);
+        addConsumer.setEnabled(false);
+        addReader.setEnabled(false);
+        addWriter.setEnabled(false);
+
         JButton stopAll = new JButton("Stop All");
         JButton refresh = new JButton("Show Status");
 
@@ -86,6 +95,11 @@ public class TicketingGUI {
             case "BlockingQueue" -> pool = new TicketPoolBlocking(cap);
         }
         log("Initialized pool: " + type + " with capacity: " + cap);
+
+        addProducer.setEnabled(true);
+        addConsumer.setEnabled(true);
+        addReader.setEnabled(true);
+        addWriter.setEnabled(true);
     }
 
     private void startWorker(Worker worker) {
@@ -96,7 +110,18 @@ public class TicketingGUI {
 
     private void updateStatus() {
         if (pool != null) {
+            // Capture the output of printStatus()
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(baos);
+            PrintStream oldOut = System.out;
+            System.setOut(ps);
+
             pool.printStatus();
+
+            System.out.flush();
+            System.setOut(oldOut);
+
+            statusArea.append(baos.toString());
         }
     }
 

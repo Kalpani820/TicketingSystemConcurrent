@@ -27,9 +27,7 @@ public class TicketPoolLock implements TicketPool{
             queue.offer(ticket);
             added++;
             notEmpty.signalAll();
-        } finally {
-            write.unlock();
-        }
+        } finally {write.unlock();}
     }
 
     public Ticket purchaseTicket() throws InterruptedException {
